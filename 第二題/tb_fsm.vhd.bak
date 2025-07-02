@@ -1,0 +1,70 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+entity tb_fsm is
+-- Testbench 無需端口
+end tb_fsm;
+
+architecture Behavioral of tb_fsm is
+    -- Component 宣告
+    component two_counter
+        port (
+            i_clk    : in std_logic;
+            i_rst    : in std_logic;
+            o_count1 : out std_logic_vector(3 downto 0);
+            o_count2 : out std_logic_vector(3 downto 0)
+        );
+    end component;
+
+    -- 測試信號
+    signal clk    : std_logic := '0';
+    signal rst    : std_logic := '0';
+    signal count1 : std_logic_vector(3 downto 0);
+    signal count2 : std_logic_vector(3 downto 0);
+
+    -- 時鐘週期
+    constant clk_period : time := 10 ns;
+
+begin
+    -- UUT (Unit Under Test) 實例化
+    uut: two_counter
+        port map (
+            i_clk    => clk,
+            i_rst    => rst,
+            o_count1 => count1,
+            o_count2 => count2
+        );
+
+    -- 時鐘產生器
+    clk_process: process
+    begin
+        while true loop
+            clk <= '0';
+            wait for clk_period / 2;
+            clk <= '1';
+            wait for clk_period / 2;
+        end loop;
+    end process;
+
+    -- 測試刺激
+    stim_process: process
+    begin
+        -- 初始狀態：reset
+        rst <= '0';
+        wait for 20 ns;
+        rst <= '1'; -- 解除 reset
+        
+        -- 觀察計數行為
+        wait for 200 ns; -- 等待足夠時間，觀察狀態切換與計數
+        rst <= '0'; -- 再次 reset
+        wait for 20 ns;
+        rst <= '1'; -- 再次啟動
+        
+        -- 停止模擬
+        wait for 200 ns;
+        assert false report "Simulation Finished" severity note;
+        wait;
+    end process;
+
+end Behavioral;
